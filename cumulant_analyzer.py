@@ -8,7 +8,7 @@ import tempfile
 
 def to_numpy(tensor):
     """
-    From neel_plotly repository (https://github.com/neelnanda-io/neel-plotly)
+    From neel_plotly repository
     Convert tensor or list to numpy array.
     
     Args:

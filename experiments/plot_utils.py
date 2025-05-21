@@ -4,8 +4,7 @@ import numpy as np
 
 def plot_stats(stats, ax, title = None, xarr = None, xlabel = None):
     """
-    Plot normalized cumulants κ₂…κ₈ using specified colorblind-friendly palette.
-    
+    Plot normalized cumulants using specified colorblind-friendly palette.
     Args:
         stats: Dictionary containing analysis statistics
         ax: Matplotlib axis to plot on
