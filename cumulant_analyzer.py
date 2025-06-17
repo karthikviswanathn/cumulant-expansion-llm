@@ -194,7 +194,8 @@ class CumulantAnalyzer:
         load_lens: bool = True,
         revision: str = None,
         cache_mode: Literal["temp", "huggingface", "custom"] = "temp",
-        cache_dir: Optional[str] = None
+        cache_dir: Optional[str] = None,
+        verbose: bool = False
     ):
         """
         Initialize the ModelAnalyzer with a specified model.
@@ -209,24 +210,26 @@ class CumulantAnalyzer:
                 - "temp": Use temporary directory (deleted after session)
                 - "huggingface": Use default HuggingFace cache directory
                 - "custom": Use user-provided directory (requires cache_dir)
-            cache_dir: Custom cache directory path (required when cache_mode="custom").
+            cache_dir: Custom cache directory path (required when cache_mode="custom")
+            verbose: Whether to print statements
         """
         self.model_name = model_name
         self.device = torch.device(device)
         self.max_length = max_length
         self.cache_mode = cache_mode
+        self.verbose = verbose
         
         # Set up cache directory based on mode
         if cache_mode == "temp":
             # Use temporary directory (original behavior)
             self._temp_dir = tempfile.TemporaryDirectory()
             self.cache_dir = self._temp_dir.name
-            print(f"Using temporary cache directory: {self.cache_dir}")
+            if self.verbose: print(f"Using temporary cache directory: {self.cache_dir}")
         elif cache_mode == "huggingface":
             # Use default HuggingFace cache directory
             self.cache_dir = None
             self._temp_dir = None
-            print("Using default HuggingFace cache directory")
+            if self.verbose: print("Using default HuggingFace cache directory")
         elif cache_mode == "custom":
             # Use custom cache directory
             if cache_dir is None:
@@ -235,7 +238,7 @@ class CumulantAnalyzer:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
             self.cache_dir = str(self.cache_dir)
             self._temp_dir = None
-            print(f"Using custom cache directory: {self.cache_dir}")
+            if self.verbose: print(f"Using custom cache directory: {self.cache_dir}")
         else:
             raise ValueError(f"Invalid cache_mode: {cache_mode}. Must be 'temp', 'huggingface', or 'custom'")
         
@@ -272,11 +275,11 @@ class CumulantAnalyzer:
             model_kwargs['revision'] = revision
             tokenizer_kwargs['revision'] = revision
         
-        print(f"Loading model {self.model_name}")
+        if self.verbose: print(f"Loading model {self.model_name}")
         if self.cache_dir is not None:
-            print(f"Cache directory: {self.cache_dir}")
+            if self.verbose: print(f"Cache directory: {self.cache_dir}")
         else:
-            print("Using default HuggingFace cache")
+            if self.verbose: print("Using default HuggingFace cache")
         model = AutoModelForCausalLM.from_pretrained(self.model_name, **model_kwargs)
         tokenizer = AutoTokenizer.from_pretrained(self.model_name, **tokenizer_kwargs)
         
@@ -289,11 +292,11 @@ class CumulantAnalyzer:
         Returns:
             Tuned lens.
         """
-        print(f"Loading TunedLens...")
+        if self.verbose: print(f"Loading TunedLens...")
         if self.cache_dir is not None:
-            print(f"Cache directory: {self.cache_dir}")
+            if self.verbose: print(f"Cache directory: {self.cache_dir}")
         else:
-            print("Using default HuggingFace cache")
+            if self.verbose: print("Using default HuggingFace cache")
         
         # Load TunedLens and move to device
         if self.cache_dir is not None:
@@ -302,6 +305,7 @@ class CumulantAnalyzer:
             tuned_lens = TunedLens.from_model_and_pretrained(self.model)
         
         tuned_lens = tuned_lens.to(self.device)
+        return tuned_lens
 
     def __del__(self):
         """Clean up temporary directory if it exists."""

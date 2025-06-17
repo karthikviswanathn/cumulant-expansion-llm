@@ -131,3 +131,114 @@ def plot_comparison(stats, shuffled_stats, figsize=(14, 4)):
     plt.tight_layout()
     
     return fig
+
+
+def plot_comparison_transposed(stats, shuffled_stats, figsize=(20, 16), ncols=3):
+    """
+    Create a transposed comparison plot with entropy plots first, then each cumulant in its own subplot,
+    showing both structured and shuffled curves.
+    
+    Args:
+        stats: Dictionary of statistics for structured data
+        shuffled_stats: Dictionary of statistics for shuffled data
+        figsize: Figure size tuple
+        ncols: Number of columns in the subplot grid
+    """
+    # Colors for structured vs shuffled
+    blue = "#0072B2"    # Blue for structured
+    orange = "#E69F00"  # Orange for shuffled
+    
+    # Get cumulants data
+    cumulants = stats['avg_normalized_cumulants']
+    shuffled_cumulants = shuffled_stats['avg_normalized_cumulants']
+    
+    # Calculate number of rows needed
+    num_cumulants = 6  # κ₂ through κ₇ (indices 0-5)
+    num_entropy_plots = 3  # entropy, entropy_com, entropy_com - entropy
+    total_plots = num_entropy_plots + num_cumulants
+    nrows = (total_plots + ncols - 1) // ncols  # Ceiling division
+    
+    # Create figure with subplots
+    fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
+    axes = axes.flatten()  # Make it easier to index
+    
+    # Create x-axis arrays
+    cumulant_xarr = np.linspace(0, 1, cumulants.shape[0])
+    entropy_xarr = np.linspace(0, 1, stats['entropy_com'].shape[0])
+    
+    # ax[0] - entropy (avg_entropy)
+    ax = axes[0]
+    ax.plot(entropy_xarr, stats['avg_entropy'],
+           marker='.', color=blue, label="Structured")
+    ax.plot(entropy_xarr, shuffled_stats['avg_entropy'],
+           marker='.', color=orange, label="Shuffled")
+    ax.set_title("Entropy", fontsize="x-large")
+    ax.grid(True)
+    ax.set_xlabel('Relative Depth', fontsize="large")
+    ax.set_ylabel('Entropy', fontsize="large")
+    ax.tick_params(which='both', labelsize="large")
+    
+    # ax[1] - entropy_com
+    ax = axes[1]
+    ax.plot(entropy_xarr, stats['entropy_com'],
+           marker='.', color=blue, label="Structured")
+    ax.plot(entropy_xarr, shuffled_stats['entropy_com'],
+           marker='.', color=orange, label="Shuffled")
+    ax.set_title("Entropy Com", fontsize="x-large")
+    ax.grid(True)
+    ax.set_xlabel('Relative Depth', fontsize="large")
+    ax.set_ylabel('Entropy Com', fontsize="large")
+    ax.tick_params(which='both', labelsize="large")
+    
+    # ax[2] - entropy_com - entropy
+    ax = axes[2]
+    entropy_diff_struct = stats['entropy_com'] - stats['avg_entropy']
+    entropy_diff_shuff = shuffled_stats['entropy_com'] - shuffled_stats['avg_entropy']
+    ax.plot(entropy_xarr, entropy_diff_struct,
+           marker='.', color=blue, label="Structured")
+    ax.plot(entropy_xarr, entropy_diff_shuff,
+           marker='.', color=orange, label="Shuffled")
+    ax.set_title("Entropy Com - Entropy", fontsize="x-large")
+    ax.grid(True)
+    ax.set_xlabel('Relative Depth', fontsize="large")
+    ax.set_ylabel('Entropy Difference', fontsize="large")
+    ax.axhline(y=0, color='gray', linestyle='-', alpha=0.3)
+    ax.tick_params(which='both', labelsize="large")
+    
+    # ax[3..] - cumulants
+    for idx in range(num_cumulants):
+        ax = axes[idx + num_entropy_plots]
+        
+        # Plot structured data
+        ax.plot(cumulant_xarr, cumulants.T[idx], 
+                marker='.', color=blue, 
+                label=f"Structured")
+        
+        # Plot shuffled data
+        ax.plot(cumulant_xarr, shuffled_cumulants.T[idx], 
+                marker='.', color=orange, 
+                label=f"Shuffled")
+        
+        # Formatting
+        ax.set_title(f"$\\kappa_{{{idx+2}}}$", fontsize="x-large")
+        ax.grid(True)
+        ax.set_xlabel('Relative Depth', fontsize="large")
+        ax.set_ylabel('Normalized Cumulant', fontsize="large")
+        ax.axhline(y=0, color='gray', linestyle='-', alpha=0.3)
+        ax.tick_params(which='both', labelsize="large")
+    
+    # Hide unused subplots
+    for idx in range(total_plots, len(axes)):
+        axes[idx].set_visible(False)
+    
+    # Add a single legend for the entire figure
+    fig.legend(['Structured', 'Shuffled'], 
+              loc='upper center', 
+              bbox_to_anchor=(0.5, -0.02), 
+              ncol=2, 
+              fontsize="x-large")
+    
+    # Adjust layout
+    plt.tight_layout()
+    
+    return fig
