@@ -133,7 +133,7 @@ def plot_comparison(stats, shuffled_stats, figsize=(14, 4)):
     return fig
 
 
-def plot_comparison_transposed(stats, shuffled_stats, figsize=(20, 16), ncols=3):
+def plot_comparison_transposed(stats, shuffled_stats, labels, figsize=(20, 16), ncols=3):
     """
     Create a transposed comparison plot with entropy plots first, then each cumulant in its own subplot,
     showing both structured and shuffled curves.
@@ -169,9 +169,9 @@ def plot_comparison_transposed(stats, shuffled_stats, figsize=(20, 16), ncols=3)
     # ax[0] - entropy (avg_entropy)
     ax = axes[0]
     ax.plot(entropy_xarr, stats['avg_entropy'],
-           marker='.', color=blue, label="Structured")
+           marker='.', color=blue, label=labels[0])
     ax.plot(entropy_xarr, shuffled_stats['avg_entropy'],
-           marker='.', color=orange, label="Shuffled")
+           marker='.', color=orange, label=labels[1])
     ax.set_title("Entropy", fontsize="x-large")
     ax.grid(True)
     ax.set_xlabel('Relative Depth', fontsize="large")
@@ -181,9 +181,9 @@ def plot_comparison_transposed(stats, shuffled_stats, figsize=(20, 16), ncols=3)
     # ax[1] - entropy_com
     ax = axes[1]
     ax.plot(entropy_xarr, stats['entropy_com'],
-           marker='.', color=blue, label="Structured")
+           marker='.', color=blue, label=labels[0])
     ax.plot(entropy_xarr, shuffled_stats['entropy_com'],
-           marker='.', color=orange, label="Shuffled")
+           marker='.', color=orange, label=labels[1])
     ax.set_title("Entropy Com", fontsize="x-large")
     ax.grid(True)
     ax.set_xlabel('Relative Depth', fontsize="large")
@@ -195,9 +195,9 @@ def plot_comparison_transposed(stats, shuffled_stats, figsize=(20, 16), ncols=3)
     entropy_diff_struct = stats['entropy_com'] - stats['avg_entropy']
     entropy_diff_shuff = shuffled_stats['entropy_com'] - shuffled_stats['avg_entropy']
     ax.plot(entropy_xarr, entropy_diff_struct,
-           marker='.', color=blue, label="Structured")
+           marker='.', color=blue, label=labels[0])
     ax.plot(entropy_xarr, entropy_diff_shuff,
-           marker='.', color=orange, label="Shuffled")
+           marker='.', color=orange, label=labels[1])
     ax.set_title("Entropy Com - Entropy", fontsize="x-large")
     ax.grid(True)
     ax.set_xlabel('Relative Depth', fontsize="large")
@@ -212,12 +212,12 @@ def plot_comparison_transposed(stats, shuffled_stats, figsize=(20, 16), ncols=3)
         # Plot structured data
         ax.plot(cumulant_xarr, cumulants.T[idx], 
                 marker='.', color=blue, 
-                label=f"Structured")
+                label=labels[0])
         
         # Plot shuffled data
         ax.plot(cumulant_xarr, shuffled_cumulants.T[idx], 
                 marker='.', color=orange, 
-                label=f"Shuffled")
+                label=labels[1])
         
         # Formatting
         ax.set_title(f"$\\kappa_{{{idx+2}}}$", fontsize="x-large")
@@ -232,7 +232,7 @@ def plot_comparison_transposed(stats, shuffled_stats, figsize=(20, 16), ncols=3)
         axes[idx].set_visible(False)
     
     # Add a single legend for the entire figure
-    fig.legend(['Structured', 'Shuffled'], 
+    fig.legend(labels, 
               loc='upper center', 
               bbox_to_anchor=(0.5, -0.02), 
               ncol=2, 
