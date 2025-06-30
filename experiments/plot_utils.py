@@ -242,3 +242,147 @@ def plot_comparison_transposed(stats, shuffled_stats, labels, figsize=(20, 16), 
     plt.tight_layout()
     
     return fig
+
+def plot_comparison_transposed_with_std(stats1_with_std, stats2_with_std, labels, figsize=(20, 16), ncols=3):
+    """
+    Create a transposed comparison plot with entropy plots first, then each cumulant in its own subplot,
+    showing both mean lines and shaded standard deviation regions.
+    
+    Args:
+        stats1_with_std: Dictionary of statistics with mean and std for first dataset
+        stats2_with_std: Dictionary of statistics with mean and std for second dataset
+        labels: List of labels for the two datasets
+        figsize: Figure size tuple
+        ncols: Number of columns in the subplot grid
+    """
+    # Colors for the two datasets
+    blue = "#0072B2"    # Blue for first dataset
+    orange = "#E69F00"  # Orange for second dataset
+    
+    # Get cumulants data with std
+    cumulants1_mean = stats1_with_std['avg_normalized_cumulants_mean']
+    cumulants1_std = stats1_with_std['avg_normalized_cumulants_std']
+    cumulants2_mean = stats2_with_std['avg_normalized_cumulants_mean']
+    cumulants2_std = stats2_with_std['avg_normalized_cumulants_std']
+    
+    # Calculate number of rows needed
+    num_cumulants = 6  # κ₂ through κ₇ (indices 0-5)
+    num_entropy_plots = 3  # entropy, entropy_com, entropy_com - entropy
+    total_plots = num_entropy_plots + num_cumulants
+    nrows = (total_plots + ncols - 1) // ncols  # Ceiling division
+    
+    # Create figure with subplots
+    fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
+    axes = axes.flatten()  # Make it easier to index
+    
+    # Create x-axis arrays
+    cumulant_xarr = np.linspace(0, 1, cumulants1_mean.shape[0])
+    entropy_xarr = np.linspace(0, 1, stats1_with_std['entropy_com_mean'].shape[0])
+    
+    # ax[0] - entropy (avg_entropy)
+    ax = axes[0]
+    entropy1_mean = stats1_with_std['avg_entropy_mean']
+    entropy1_std = stats1_with_std['avg_entropy_std']
+    entropy2_mean = stats2_with_std['avg_entropy_mean']
+    entropy2_std = stats2_with_std['avg_entropy_std']
+    
+    ax.plot(entropy_xarr, entropy1_mean, color=blue, label=labels[0])
+    ax.fill_between(entropy_xarr, entropy1_mean - entropy1_std, entropy1_mean + entropy1_std, 
+                    color=blue, alpha=0.3)
+    ax.plot(entropy_xarr, entropy2_mean, color=orange, label=labels[1])
+    ax.fill_between(entropy_xarr, entropy2_mean - entropy2_std, entropy2_mean + entropy2_std, 
+                    color=orange, alpha=0.3)
+    
+    ax.set_title("Entropy", fontsize="x-large")
+    ax.grid(True)
+    ax.set_xlabel('Relative Depth', fontsize="large")
+    ax.set_ylabel('Entropy', fontsize="large")
+    ax.tick_params(which='both', labelsize="large")
+    
+    # ax[1] - entropy_com
+    ax = axes[1]
+    entropy_com1_mean = stats1_with_std['entropy_com_mean']
+    entropy_com1_std = stats1_with_std['entropy_com_std']
+    entropy_com2_mean = stats2_with_std['entropy_com_mean']
+    entropy_com2_std = stats2_with_std['entropy_com_std']
+    
+    ax.plot(entropy_xarr, entropy_com1_mean, color=blue, label=labels[0])
+    ax.fill_between(entropy_xarr, entropy_com1_mean - entropy_com1_std, entropy_com1_mean + entropy_com1_std, 
+                    color=blue, alpha=0.3)
+    ax.plot(entropy_xarr, entropy_com2_mean, color=orange, label=labels[1])
+    ax.fill_between(entropy_xarr, entropy_com2_mean - entropy_com2_std, entropy_com2_mean + entropy_com2_std, 
+                    color=orange, alpha=0.3)
+    
+    ax.set_title("Entropy Com", fontsize="x-large")
+    ax.grid(True)
+    ax.set_xlabel('Relative Depth', fontsize="large")
+    ax.set_ylabel('Entropy Com', fontsize="large")
+    ax.tick_params(which='both', labelsize="large")
+    
+    # ax[2] - entropy_com - entropy
+    ax = axes[2]
+    entropy_diff1_mean = entropy_com1_mean - entropy1_mean
+    entropy_diff1_std = np.sqrt(entropy_com1_std**2 + entropy1_std**2)  # Error propagation
+    entropy_diff2_mean = entropy_com2_mean - entropy2_mean
+    entropy_diff2_std = np.sqrt(entropy_com2_std**2 + entropy2_std**2)  # Error propagation
+    
+    ax.plot(entropy_xarr, entropy_diff1_mean, color=blue, label=labels[0])
+    ax.fill_between(entropy_xarr, entropy_diff1_mean - entropy_diff1_std, entropy_diff1_mean + entropy_diff1_std, 
+                    color=blue, alpha=0.3)
+    ax.plot(entropy_xarr, entropy_diff2_mean, color=orange, label=labels[1])
+    ax.fill_between(entropy_xarr, entropy_diff2_mean - entropy_diff2_std, entropy_diff2_mean + entropy_diff2_std, 
+                    color=orange, alpha=0.3)
+    
+    ax.set_title("Entropy Com - Entropy", fontsize="x-large")
+    ax.grid(True)
+    ax.set_xlabel('Relative Depth', fontsize="large")
+    ax.set_ylabel('Entropy Difference', fontsize="large")
+    ax.axhline(y=0, color='gray', linestyle='-', alpha=0.3)
+    ax.tick_params(which='both', labelsize="large")
+    
+    # ax[3..] - cumulants
+    for idx in range(num_cumulants):
+        ax = axes[idx + num_entropy_plots]
+        
+        # Get means and stds for this cumulant
+        cum1_mean = cumulants1_mean.T[idx]
+        cum1_std = cumulants1_std.T[idx]
+        cum2_mean = cumulants2_mean.T[idx]
+        cum2_std = cumulants2_std.T[idx]
+        
+        # Plot first dataset
+        ax.plot(cumulant_xarr, cum1_mean, color=blue, label=labels[0])
+        ax.fill_between(cumulant_xarr, cum1_mean - cum1_std, cum1_mean + cum1_std, 
+                        color=blue, alpha=0.3)
+        
+        # Plot second dataset
+        ax.plot(cumulant_xarr, cum2_mean, color=orange, label=labels[1])
+        ax.fill_between(cumulant_xarr, cum2_mean - cum2_std, cum2_mean + cum2_std, 
+                        color=orange, alpha=0.3)
+        
+        # Formatting
+        ax.set_title(f"$\\kappa_{{{idx+2}}}$", fontsize="x-large")
+        ax.grid(True)
+        ax.set_xlabel('Relative Depth', fontsize="large")
+        ax.set_ylabel('Normalized Cumulant', fontsize="large")
+        ax.axhline(y=0, color='gray', linestyle='-', alpha=0.3)
+        ax.tick_params(which='both', labelsize="large")
+    
+    # Hide unused subplots
+    for idx in range(total_plots, len(axes)):
+        axes[idx].set_visible(False)
+    
+    # Get legend handles and labels from the first subplot that has data
+    handles, legend_labels = axes[0].get_legend_handles_labels()
+    
+    # Add a single legend for the entire figure
+    fig.legend(handles, legend_labels, 
+              loc='upper center', 
+              bbox_to_anchor=(0.5, -0.02), 
+              ncol=2, 
+              fontsize="x-large")
+    
+    # Adjust layout
+    plt.tight_layout()
+    
+    return fig
