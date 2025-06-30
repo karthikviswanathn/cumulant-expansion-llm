@@ -243,7 +243,7 @@ def plot_comparison_transposed(stats, shuffled_stats, labels, figsize=(20, 16), 
     
     return fig
 
-def plot_comparison_transposed_with_std(stats1_with_std, stats2_with_std, labels, figsize=(20, 16), ncols=3):
+def plot_comparison_transposed_with_std(stats1_with_std, stats2_with_std, labels, figsize=(18, 9), ncols=4):
     """
     Create a transposed comparison plot with entropy plots first, then each cumulant in its own subplot,
     showing both mean lines and shaded standard deviation regions.
@@ -267,7 +267,7 @@ def plot_comparison_transposed_with_std(stats1_with_std, stats2_with_std, labels
     
     # Calculate number of rows needed
     num_cumulants = 6  # κ₂ through κ₇ (indices 0-5)
-    num_entropy_plots = 3  # entropy, entropy_com, entropy_com - entropy
+    num_entropy_plots = 2  # entropy, entropy_com, entropy_com - entropy
     total_plots = num_entropy_plots + num_cumulants
     nrows = (total_plots + ncols - 1) // ncols  # Ceiling division
     
@@ -320,25 +320,25 @@ def plot_comparison_transposed_with_std(stats1_with_std, stats2_with_std, labels
     ax.tick_params(which='both', labelsize="large")
     
     # ax[2] - entropy_com - entropy
-    ax = axes[2]
-    entropy_diff1_mean = entropy_com1_mean - entropy1_mean
-    entropy_diff1_std = np.sqrt(entropy_com1_std**2 + entropy1_std**2)  # Error propagation
-    entropy_diff2_mean = entropy_com2_mean - entropy2_mean
-    entropy_diff2_std = np.sqrt(entropy_com2_std**2 + entropy2_std**2)  # Error propagation
+    # ax = axes[2]
+    # entropy_diff1_mean = entropy_com1_mean - entropy1_mean
+    # entropy_diff1_std = np.sqrt(entropy_com1_std**2 + entropy1_std**2)  # Error propagation
+    # entropy_diff2_mean = entropy_com2_mean - entropy2_mean
+    # entropy_diff2_std = np.sqrt(entropy_com2_std**2 + entropy2_std**2)  # Error propagation
     
-    ax.plot(entropy_xarr, entropy_diff1_mean, color=blue, label=labels[0])
-    ax.fill_between(entropy_xarr, entropy_diff1_mean - entropy_diff1_std, entropy_diff1_mean + entropy_diff1_std, 
-                    color=blue, alpha=0.3)
-    ax.plot(entropy_xarr, entropy_diff2_mean, color=orange, label=labels[1])
-    ax.fill_between(entropy_xarr, entropy_diff2_mean - entropy_diff2_std, entropy_diff2_mean + entropy_diff2_std, 
-                    color=orange, alpha=0.3)
+    # ax.plot(entropy_xarr, entropy_diff1_mean, color=blue, label=labels[0])
+    # ax.fill_between(entropy_xarr, entropy_diff1_mean - entropy_diff1_std, entropy_diff1_mean + entropy_diff1_std, 
+    #                 color=blue, alpha=0.3)
+    # ax.plot(entropy_xarr, entropy_diff2_mean, color=orange, label=labels[1])
+    # ax.fill_between(entropy_xarr, entropy_diff2_mean - entropy_diff2_std, entropy_diff2_mean + entropy_diff2_std, 
+    #                 color=orange, alpha=0.3)
     
-    ax.set_title("Entropy Com - Entropy", fontsize="x-large")
-    ax.grid(True)
-    ax.set_xlabel('Relative Depth', fontsize="large")
-    ax.set_ylabel('Entropy Difference', fontsize="large")
-    ax.axhline(y=0, color='gray', linestyle='-', alpha=0.3)
-    ax.tick_params(which='both', labelsize="large")
+    # ax.set_title("Entropy Com - Entropy", fontsize="x-large")
+    # ax.grid(True)
+    # ax.set_xlabel('Relative Depth', fontsize="large")
+    # ax.set_ylabel('Entropy Difference', fontsize="large")
+    # ax.axhline(y=0, color='gray', linestyle='-', alpha=0.3)
+    # ax.tick_params(which='both', labelsize="large")
     
     # ax[3..] - cumulants
     for idx in range(num_cumulants):
